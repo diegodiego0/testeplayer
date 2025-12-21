@@ -610,61 +610,6 @@
       50% { opacity: 0.7; }
     }
     
-    /* EPG Info Styles */
-    .epg-info {
-      margin-top: 0.35rem;
-      padding: 0.35rem 0.5rem;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 0.4rem;
-      border-left: 3px solid var(--primary-color);
-    }
-    .epg-current {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
-      color: var(--text-primary);
-    }
-    .epg-current-icon {
-      color: var(--primary-color);
-      font-size: 0.7rem;
-    }
-    .epg-current-title {
-      font-weight: 600;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 200px;
-    }
-    .epg-current-time {
-      font-size: 0.65rem;
-      color: var(--text-secondary);
-      margin-left: auto;
-    }
-    .epg-next {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.68rem;
-      color: var(--text-secondary);
-      margin-top: 0.25rem;
-    }
-    .epg-next-label {
-      font-weight: 500;
-      color: var(--text-tertiary);
-    }
-    .epg-next-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 180px;
-    }
-    .epg-loading {
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-      font-style: italic;
-    }
-    
     .favorite-btn {
       background: none;
       border: none;
@@ -2244,10 +2189,6 @@
         // NOVA PROPRIEDADE: Controle se está reproduzindo vídeo de rádio
         this.radioVideoMode = false;
         
-        // EPG Cache - para armazenar dados do guia de programação
-        this.epgCache = new Map();
-        this.epgCacheExpiration = 5 * 60 * 1000; // 5 minutos
-        
         this.config = {
           server: 'http://c.maintech.top',
           githubRawUrl: 'https://raw.githubusercontent.com/1IPTVPLAYERv/radios/refs/heads/main/radios.json ', // INSIRA AQUI A URL DO GITHUB RAW PARA CARREGAR RÁDIOS EXTRAS
@@ -3113,7 +3054,7 @@
 
         let details = '';
         if (type === 'channel') {
-          details = isPlaying ? '' : 'Toque para assistir';
+          details = isPlaying ? 'Reproduzindo agora' : 'Toque para assistir';
         } else if (type === 'movie') {
           details = content.year ? `Ano: ${content.year}` : 'Filme';
         } else if (type === 'series') {
@@ -3131,9 +3072,6 @@
           if (isPlaying) details = 'Tocando agora';
         }
 
-        // Adicionar container de EPG para canais
-        const epgContainer = (type === 'channel' && isPlaying) ? '<div class="epg-info"><span class="epg-loading">Carregando programação...</span></div>' : '';
-
         item.innerHTML = `
           <div class="content-avatar" style="${avatarStyle}">
             ${!content.icon ? content.letter : ''}
@@ -3145,7 +3083,6 @@
               ${content.rating ? ` • ⭐ ${content.rating}` : ''}
               ${progressIndicator}
             </div>
-            ${epgContainer}
           </div>
           ${isPlaying ? '<div class="playing-indicator">Tocando</div>' : ''}
           <button class="favorite-btn ${this.favorites.has(content.id) ? 'active' : ''}" 
@@ -3153,11 +3090,6 @@
             <i class="fas fa-heart"></i>
           </button>
         `;
-
-        // Carregar EPG para canais em reprodução
-        if (type === 'channel' && isPlaying && content.id) {
-          this.updateChannelEPG(item, content.id);
-        }
 
         // Content click event
         item.addEventListener('click', (e) => {
@@ -3182,150 +3114,6 @@
         });
 
         return item;
-      }
-
-      // ========== FUNÇÕES EPG ==========
-      
-      // Decodificar Base64 com suporte a UTF-8
-      decodeBase64(str) {
-        try {
-          if (!str) return str;
-          // Verifica se parece ser Base64
-          if (/^[A-Za-z0-9+/=]+$/.test(str) && str.length > 3) {
-            const decoded = atob(str);
-            // Decodifica UTF-8
-            return decodeURIComponent(escape(decoded));
-          }
-          return str;
-        } catch (e) {
-          // Se falhar a decodificação, retorna a string original
-          return str;
-        }
-      }
-      
-      // Buscar EPG para um canal específico
-      async fetchChannelEPG(streamId) {
-        const cacheKey = `epg_${streamId}`;
-        const cached = this.epgCache.get(cacheKey);
-        
-        // Verificar cache
-        if (cached && Date.now() - cached.timestamp < this.epgCacheExpiration) {
-          return cached.data;
-        }
-        
-        try {
-          const url = `${this.config.server}/player_api.php?username=${this.config.username}&password=${this.config.password}&action=get_simple_data_table&stream_id=${streamId}`;
-          
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error('Erro ao buscar EPG');
-          }
-          
-          const data = await response.json();
-          
-          if (!data || !data.epg_listings || data.epg_listings.length === 0) {
-            return null;
-          }
-          
-          const now = Math.floor(Date.now() / 1000);
-          const epgList = data.epg_listings;
-          
-          // Encontrar programa atual e próximo
-          let currentProgram = null;
-          let nextProgram = null;
-          
-          for (let i = 0; i < epgList.length; i++) {
-            const program = epgList[i];
-            const start = parseInt(program.start_timestamp);
-            const end = parseInt(program.stop_timestamp);
-            
-            if (now >= start && now < end) {
-              currentProgram = {
-                title: this.decodeBase64(program.title),
-                start: program.start,
-                end: program.end,
-                description: this.decodeBase64(program.description || '')
-              };
-              
-              // Próximo programa
-              if (i + 1 < epgList.length) {
-                const next = epgList[i + 1];
-                nextProgram = {
-                  title: this.decodeBase64(next.title),
-                  start: next.start,
-                  end: next.end
-                };
-              }
-              break;
-            }
-          }
-          
-          const epgData = { current: currentProgram, next: nextProgram };
-          
-          // Salvar no cache
-          this.epgCache.set(cacheKey, {
-            data: epgData,
-            timestamp: Date.now()
-          });
-          
-          return epgData;
-          
-        } catch (error) {
-          console.error('Erro ao buscar EPG para stream', streamId, error);
-          return null;
-        }
-      }
-      
-      // Formatar hora do EPG (HH:MM)
-      formatEPGTime(timeStr) {
-        if (!timeStr) return '';
-        try {
-          // Formato esperado: "YYYY-MM-DD HH:MM:SS"
-          const parts = timeStr.split(' ');
-          if (parts.length >= 2) {
-            const timeParts = parts[1].split(':');
-            return `${timeParts[0]}:${timeParts[1]}`;
-          }
-          return timeStr;
-        } catch (e) {
-          return timeStr;
-        }
-      }
-      
-      // Atualizar EPG de um item na lista
-      async updateChannelEPG(itemElement, streamId) {
-        const epgContainer = itemElement.querySelector('.epg-info');
-        if (!epgContainer) return;
-        
-        const epgData = await this.fetchChannelEPG(streamId);
-        
-        if (epgData && epgData.current) {
-          const startTime = this.formatEPGTime(epgData.current.start);
-          const endTime = this.formatEPGTime(epgData.current.end);
-          
-          let epgHTML = `
-            <div class="epg-current">
-              <i class="fas fa-tv epg-current-icon"></i>
-              <span class="epg-current-title">${epgData.current.title}</span>
-              <span class="epg-current-time">${startTime} - ${endTime}</span>
-            </div>
-          `;
-          
-          if (epgData.next) {
-            const nextStart = this.formatEPGTime(epgData.next.start);
-            epgHTML += `
-              <div class="epg-next">
-                <span class="epg-next-label">Depois:</span>
-                <span class="epg-next-title">${epgData.next.title}</span>
-                <span class="epg-current-time">${nextStart}</span>
-              </div>
-            `;
-          }
-          
-          epgContainer.innerHTML = epgHTML;
-        } else {
-          epgContainer.innerHTML = '';
-        }
       }
 
       // NOVA FUNÇÃO PARA ANIMAR A LOGO
