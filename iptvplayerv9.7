@@ -654,43 +654,80 @@
     /* EPG Info Styles - Nova linha após Reproduzindo agora */
     .epg-line {
       display: flex;
-      flex-direction: vertical;
-      gap: 0.2rem;
+      flex-direction: column; /* ALTERADO: vertical para column */
+      gap: 0.3rem;
       margin-top: 0.4rem;
-      padding: 0.2rem 0.6rem;
+      padding: 0.3rem 0.6rem;
       background: linear-gradient(135deg, rgba(var(--primary-color-rgb, 0, 123, 255), 0.15), rgba(0, 0, 0, 0.3));
       border-radius: 0.4rem;
       border-left: 3px solid var(--primary-color);
       font-size: 0.75rem;
       animation: fadeIn 0.3s ease;
+      overflow: hidden;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-5px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
+    /* Animação de deslize (marquee) para títulos longos */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      10% { transform: translateX(0%); }
+      90% { transform: translateX(-100%); }
+      100% { transform: translateX(-100%); }
+    }
+    @keyframes marquee-reset {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(0%); }
+    }
+    
     .epg-line-current {
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      width: 100%;
     }
     .epg-line-icon {
       color: var(--primary-color);
       font-size: 0.7rem;
       flex-shrink: 0;
     }
+    
+    /* Container para animação de título */
+    .epg-title-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-width: 0;
+    }
+    
     .epg-line-program {
       color: var(--text-primary);
       font-weight: 600;
-      flex: 1;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      display: inline-block;
     }
+    
+    /* Animação de deslize para títulos longos */
+    .epg-title-wrapper.overflow .epg-line-program {
+      animation: marquee 8s linear infinite;
+      padding-right: 2rem;
+    }
+    .epg-title-wrapper.overflow .epg-line-program::after {
+      content: attr(data-title);
+      position: absolute;
+      left: 100%;
+      padding-left: 2rem;
+      white-space: nowrap;
+    }
+    
     .epg-line-time {
       color: rgba(255, 255, 255, 0.7);
       font-size: 0.65rem;
       white-space: nowrap;
       flex-shrink: 0;
+      margin-left: auto;
     }
     .epg-line-loading {
       color: rgba(255, 255, 255, 0.5);
@@ -703,25 +740,51 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    
+    /* A Seguir - linha separada abaixo */
     .epg-line-next {
       display: flex;
       align-items: center;
       gap: 0.4rem;
       font-size: 0.65rem;
       color: rgba(255, 255, 255, 0.6);
-      padding-left: 0.2rem;
+      padding-top: 0.25rem;
+      margin-top: 0.2rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      width: 100%;
     }
     .epg-line-next-label {
       font-weight: 600;
       color: rgba(255, 255, 255, 0.5);
       flex-shrink: 0;
     }
-    .epg-line-next-title {
+    
+    /* Container para animação do título "A seguir" */
+    .epg-next-title-wrapper {
       flex: 1;
-      white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
+      position: relative;
+      min-width: 0;
     }
+    
+    .epg-line-next-title {
+      white-space: nowrap;
+      display: inline-block;
+    }
+    
+    /* Animação de deslize para títulos longos do "A seguir" */
+    .epg-next-title-wrapper.overflow .epg-line-next-title {
+      animation: marquee 8s linear infinite;
+      padding-right: 2rem;
+    }
+    .epg-next-title-wrapper.overflow .epg-line-next-title::after {
+      content: attr(data-title);
+      position: absolute;
+      left: 100%;
+      padding-left: 2rem;
+      white-space: nowrap;
+    }
+    
     .epg-current-title {
       font-weight: 600;
       overflow: hidden;
@@ -3271,8 +3334,8 @@
           if (isPlaying) details = 'Tocando agora';
         }
 
-        // EPG em nova linha - mostrado automaticamente para canais em reprodução
-        const epgLineSection = (type === 'channel' && isPlaying) ? `
+        // EPG em nova linha - mostrado para TODOS os canais
+        const epgLineSection = (type === 'channel') ? `
           <div class="epg-line" data-epg-line-id="${content.id}">
             <i class="fas fa-spinner epg-line-loading"></i>
             <span class="epg-line-loading">Carregando EPG...</span>
@@ -3299,8 +3362,8 @@
           </button>
         `;
 
-        // Carregar EPG automaticamente para canal em reprodução
-        if (type === 'channel' && isPlaying && content.id) {
+        // Carregar EPG automaticamente para TODOS os canais
+        if (type === 'channel' && content.id) {
           this.loadEPGLine(item, content.id, content.name);
         }
 
@@ -3341,29 +3404,38 @@
         if (epgData && epgData.current) {
           const startTime = this.formatEPGTime(epgData.current.start);
           const endTime = this.formatEPGTime(epgData.current.end);
+          const currentTitle = epgData.current.title;
           
           let epgHTML = `
             <div class="epg-line-current">
               <i class="fas fa-play-circle epg-line-icon"></i>
-              <span class="epg-line-program">${epgData.current.title}</span>
+              <div class="epg-title-wrapper">
+                <span class="epg-line-program" data-title="${this.escapeHtml(currentTitle)}">${currentTitle}</span>
+              </div>
               <span class="epg-line-time">${startTime} - ${endTime}</span>
             </div>
           `;
           
-          // Adicionar linha do próximo programa se disponível
+          // Adicionar linha do próximo programa se disponível (abaixo, em linha separada)
           if (epgData.next) {
             const nextStart = this.formatEPGTime(epgData.next.start);
+            const nextTitle = epgData.next.title;
             epgHTML += `
               <div class="epg-line-next">
                 <i class="fas fa-clock epg-line-icon"></i>
                 <span class="epg-line-next-label">A seguir:</span>
-                <span class="epg-line-next-title">${epgData.next.title}</span>
+                <div class="epg-next-title-wrapper">
+                  <span class="epg-line-next-title" data-title="${this.escapeHtml(nextTitle)}">${nextTitle}</span>
+                </div>
                 <span class="epg-line-time">${nextStart}</span>
               </div>
             `;
           }
           
           epgLine.innerHTML = epgHTML;
+          
+          // Verificar se os títulos precisam de animação (overflow)
+          this.checkTitleOverflow(epgLine);
         } else {
           epgLine.innerHTML = `
             <div class="epg-line-current">
@@ -3372,6 +3444,36 @@
             </div>
           `;
         }
+      }
+      
+      // Escapar HTML para evitar XSS
+      escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      
+      // Verificar se o título tem overflow e adicionar classe para animação
+      checkTitleOverflow(epgLine) {
+        setTimeout(() => {
+          // Verificar título atual
+          const titleWrapper = epgLine.querySelector('.epg-title-wrapper');
+          if (titleWrapper) {
+            const titleSpan = titleWrapper.querySelector('.epg-line-program');
+            if (titleSpan && titleSpan.scrollWidth > titleWrapper.clientWidth) {
+              titleWrapper.classList.add('overflow');
+            }
+          }
+          
+          // Verificar título do próximo
+          const nextWrapper = epgLine.querySelector('.epg-next-title-wrapper');
+          if (nextWrapper) {
+            const nextSpan = nextWrapper.querySelector('.epg-line-next-title');
+            if (nextSpan && nextSpan.scrollWidth > nextWrapper.clientWidth) {
+              nextWrapper.classList.add('overflow');
+            }
+          }
+        }, 100);
       }
       
       // Decodificar Base64 com suporte a UTF-8
