@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV Player v9 v5 - Atualizado</title>
+  <title>IPTV Player v9 v7 - Atualizado</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css" rel="stylesheet">
   <link href="https://vjs.zencdn.net/8.6.1/video-js.css" rel="stylesheet">
@@ -88,6 +88,47 @@
       padding: 0;
       height: 100%;
       overflow-x: hidden;
+    }
+    
+    /* Background personalizado da página */
+    body.has-background {
+      background-image: var(--page-background);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    
+    /* Transparência nos elementos quando há background (exceto player) */
+    body.has-background .header {
+      background: linear-gradient(135deg, rgba(0, 168, 72, 0.20), rgba(0, 200, 81, 0.20));
+    }
+    body.has-background .main-nav {
+      background-color: rgba(37, 37, 37, 0.20);
+    }
+    body.has-background .tab-bar {
+      background-color: rgba(48, 48, 48, 0.20);
+    }
+    body.has-background .content-list {
+      background-color: rgba(48, 48, 48, 0.20);
+    }
+    body.has-background .content-section-landscape {
+      background: rgba(37, 37, 37, 0.20);
+    }
+    body.has-background .content-item {
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+    body.has-background .content-item:hover {
+      background-color: rgba(64, 64, 64, 0.9);
+    }
+    body.has-background .favorites-header {
+      background: rgba(37, 37, 37, 0.20);
+    }
+    body.has-background .modal-content {
+      background-color: rgba(48, 48, 48, 0.95);
+    }
+    body.has-background .app-container {
+      background: transparent;
     }
     
     /* Header Styles - SEMPRE NO TOPO EM PAISAGEM */
@@ -1792,19 +1833,19 @@
   </style>
   <link rel="icon" href="/favicon.ico" />
   <link rel="canonical" href="/iptv-player-v7.html" />
-  <meta name="description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v5. Rápido, seguro e fácil de usar." />
-  <meta property="og:title" content="IPTV Player v9 v5 — Player IPTV no Navegador" />
-  <meta property="og:description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v5. Rápido, seguro e fácil de usar." />
+  <meta name="description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v7. Rápido, seguro e fácil de usar." />
+  <meta property="og:title" content="IPTV Player v9 v7 — Player IPTV no Navegador" />
+  <meta property="og:description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v7. Rápido, seguro e fácil de usar." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="/iptv-player-v7.html" />
   <meta property="og:image" content="/favicon.ico" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="IPTV Player v9 v5 — Player IPTV no Navegador" />
-  <meta name="twitter:description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v5. Rápido, seguro e fácil de usar." />
+  <meta name="twitter:title" content="IPTV Player v9 v7 — Player IPTV no Navegador" />
+  <meta name="twitter:description" content="Assista listas IPTV direto no navegador com o IPTV Player v9 v7. Rápido, seguro e fácil de usar." />
   <meta name="theme-color" content="#00A848" />
 
   <script type="application/ld+json">
-  { "@context": "https://schema.org", "@type": "WebApplication", "name": "IPTV Player v9 v5", "url": "/iptv-player-v7.html", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Web", "description": "Player IPTV direto no navegador para assistir listas M3U/M3U8 com rapidez e segurança.", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" } }
+  { "@context": "https://schema.org", "@type": "WebApplication", "name": "IPTV Player v9 v7", "url": "/iptv-player-v7.html", "applicationCategory": "EntertainmentApplication", "operatingSystem": "Web", "description": "Player IPTV direto no navegador para assistir listas M3U/M3U8 com rapidez e segurança.", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" } }
   </script>
 </head>
 <body data-theme="verde">
@@ -2184,6 +2225,19 @@
     function loadTheme() {
       const savedTheme = localStorage.getItem('iptv-theme') || 'verde';
       document.body.setAttribute('data-theme', savedTheme);
+    }
+
+    // Função para carregar background personalizado da página
+    function loadPageBackground() {
+      // URL do background - configure aqui ou deixe vazio para não usar
+      const backgroundUrl = ' https://cdn.pixabay.com/video/2022/11/25/140483-775376142_tiny.jpg ';
+      
+      if (backgroundUrl && backgroundUrl.trim() !== '') {
+        document.body.style.setProperty('--page-background', `url('${backgroundUrl}')`);
+        document.body.classList.add('has-background');
+      } else {
+        document.body.classList.remove('has-background');
+      }
     }
 
     // Favorites Backend Class
@@ -4812,11 +4866,11 @@
         return false;
       });
       loadTheme();
+      loadPageBackground();
       iptvApp = new IPTVApp();
     });
   </script>
 
 </body>
 </html>
-
 
