@@ -661,7 +661,8 @@
   
   .content-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
     padding: clamp(0.5rem, 2vw, 1rem);
     border-bottom: 1px solid var(--bg-quaternary);
     cursor: pointer;
@@ -697,6 +698,9 @@
   .content-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - clamp(40px, 8vw, 60px) - 1rem - 40px);
   }
   .content-name {
     font-weight: 600;
@@ -766,20 +770,23 @@
     50% { opacity: 0.7; }
   }
   
-  /* EPG Info Styles - Nova linha após Reproduzindo agora */
+  /* EPG Info Styles - CORRIGIDO: ocupa largura total */
   .epg-line {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    margin-top: 0.5rem;
-    padding: 0.4rem 0.6rem;
+    gap: 0.3rem;
+    margin-top: 1.5rem;
+    margin-left: -50px;
+    padding: 0.5rem 0.75rem;
     background: linear-gradient(135deg, rgba(var(--primary-color-rgb, 0, 123, 255), 0.15), rgba(0, 0, 0, 0.3));
-    border-radius: 0.4rem;
+    border-radius: 0.5rem;
     border-left: 3px solid var(--primary-color);
     font-size: 0.75rem;
     animation: fadeIn 0.3s ease;
     overflow: hidden;
-    max-width: 100%;
+    width: 100%; /* CORRIGIDO: largura total */
+    flex-basis: 100%; /* CORRIGIDO: força nova linha */
+    order: 10; /* CORRIGIDO: vai para o final */
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
@@ -869,11 +876,8 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.6);
-    padding-top: 0.25rem;
-    margin-top: 0.2rem;
-    border-top: 1px dashed rgba(255, 255, 255, 0.15);
     width: 100%;
   }
   .epg-line-next-label {
@@ -5103,5 +5107,3 @@ function loadPageBackground() {
 
 </body>
 </html>
-
-
