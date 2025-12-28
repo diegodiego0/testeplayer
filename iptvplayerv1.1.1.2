@@ -659,15 +659,24 @@
     border-radius: 3px;
   }
   
+  /* Container de cada item de canal/filme/série */
   .content-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;             /* Permite que EPG vá para nova linha */
     padding: clamp(0.5rem, 2vw, 1rem);
+    padding-bottom: 0;           /* Remove padding inferior - EPG ocupa até o fim */
     border-bottom: 1px solid var(--bg-quaternary);
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
   }
+  
+  /* Quando NÃO tem EPG, restaura padding inferior */
+  .content-item:not(:has(.epg-line)) {
+    padding-bottom: clamp(0.5rem, 2vw, 1rem);
+  }
+  
   .content-item:hover {
     background-color: var(--bg-quaternary);
     transform: translateX(5px);
@@ -675,6 +684,7 @@
   .content-item.playing {
     background: linear-gradient(90deg, rgba(220, 20, 60, 0.2), transparent);
     border-left: 4px solid var(--primary-color);
+    padding-bottom: 0;           /* EPG vai até o fim no item em reprodução */
   }
   
   .content-avatar {
@@ -697,6 +707,9 @@
   .content-info {
     flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - clamp(40px, 8vw, 60px) - 1rem - 40px);
   }
   .content-name {
     font-weight: 600;
@@ -766,26 +779,80 @@
     50% { opacity: 0.7; }
   }
   
-  /* EPG Info Styles - Nova linha após Reproduzindo agora */
+  /* ========================================
+     EPG (Guia de Programação Eletrônica) - ESTILOS
+     ======================================== */
+  
+  /* Container principal do EPG - ocupa toda largura disponível */
+  /* MODIFICAR: width, padding, margin para ajustar tamanho */
   .epg-line {
-    display: flex;
-    flex-direction: column;
-    gap: -1.4rem;
-    margin-top: 0.0rem;
-    padding: -10.4rem 0.6rem;
+    display: flex;               /* Layout flexbox para organizar conteúdo */
+    flex-direction: column;      /* Empilha programa atual e próximo verticalmente */
+    gap: 0.3rem;                 /* Espaçamento entre programa atual e próximo */
+    margin-top: 0.5rem;          /* MODIFICAR: Espaço acima do EPG */
+    padding: 0.5rem 0;           /* MODIFICAR: Padding interno vertical (sem padding lateral) */
     background: linear-gradient(135deg, rgba(var(--primary-color-rgb, 0, 123, 255), 0.15), rgba(0, 0, 0, 0.3));
-    border-radius: 0.4rem;
-    border-left: 3px solid var(--primary-color);
-    font-size: 0.75rem;
-    animation: fadeIn 0.3s ease;
-    margin-left: -50px;
-    width: calc(250% + 150%); /* ok Expande para compensar o margin-left negativo */
-    overflow: hidden;
-    order: 10;
-    flex-basis: 100%;
-    max-width: 100%;
+    /* MODIFICAR: background para mudar cor de fundo do EPG */
+    border-left: 3px solid var(--primary-color); /* MODIFICAR: Borda esquerda colorida */
+    font-size: 0.75rem;          /* MODIFICAR: Tamanho da fonte do EPG */
+    animation: fadeIn 0.3s ease; /* Animação de entrada suave */
+    overflow: hidden;            /* Esconde conteúdo que ultrapassa */
+    box-sizing: border-box;      /* Inclui padding no cálculo de largura */
+    
+    /* === CONFIGURAÇÃO DE LARGURA TOTAL SEM MARGENS === */
+    /* Força EPG para nova linha ocupando 100% da largura */
+    flex-basis: 100%;            /* Ocupa toda largura, forçando nova linha no flex-wrap */
+    width: calc(100% + clamp(1rem, 4vw, 2rem)); /* Expande para compensar padding do pai */
+    margin-left: calc(-1 * clamp(0.5rem, 2vw, 1rem)); /* Margem negativa para alinhar à esquerda */
+    margin-right: calc(-1 * clamp(0.5rem, 2vw, 1rem)); /* Margem negativa para alinhar à direita */
+    margin-bottom: 0;            /* SEM margem inferior */
+    padding-left: clamp(0.5rem, 2vw, 1rem);  /* MODIFICAR: Padding interno esquerdo */
+    padding-right: clamp(0.5rem, 2vw, 1rem); /* MODIFICAR: Padding interno direito */
+    padding-bottom: 0.5rem;      /* MODIFICAR: Padding inferior */
+    border-radius: 0;            /* Sem bordas arredondadas para ocupar toda largura */
   }
   
+  /* === RESPONSIVIDADE DO EPG PARA TELAS HORIZONTAIS (LANDSCAPE) === */
+  @media (orientation: landscape) {
+    .epg-line {
+      font-size: 0.7rem;         /* Fonte menor em landscape */
+      padding: 0.4rem 0.5rem;    /* Padding ajustado */
+      gap: 0.25rem;              /* Gap menor entre linhas */
+    }
+    .epg-line-program,
+    .epg-line-next-title {
+      font-size: 0.68rem;        /* Títulos menores em landscape */
+    }
+    .epg-line-time,
+    .epg-line-next-time {
+      font-size: 0.6rem;         /* Horários menores em landscape */
+    }
+  }
+  
+  /* === RESPONSIVIDADE PARA TELAS PEQUENAS (MOBILE) === */
+  @media (max-width: 480px) {
+    .epg-line {
+      font-size: 0.7rem;
+      padding: 0.35rem 0.4rem;
+      gap: 0.2rem;
+    }
+  }
+  
+  /* === RESPONSIVIDADE PARA TABLETS === */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .epg-line {
+      font-size: 0.72rem;
+      padding: 0.4rem 0.5rem;
+    }
+  }
+  
+  /* === RESPONSIVIDADE PARA TELAS GRANDES === */
+  @media (min-width: 769px) {
+    .epg-line {
+      font-size: 0.78rem;
+      padding: 0.5rem 0.6rem;
+    }
+  }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
@@ -803,46 +870,70 @@
     100% { transform: translateX(0%); }
   }
   
+  /* ========================================
+     EPG - PROGRAMA ATUAL (LINHA PRINCIPAL)
+     ======================================== */
+  
+  /* Container da linha do programa atual */
+  /* MODIFICAR: gap para espaçamento entre elementos */
   .epg-line-current {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    width: 100%;
-  }
-  .epg-line-icon {
-    color: var(--primary-color);
-    font-size: 0.7rem;
-    flex-shrink: 0;
+    display: flex;               /* Layout horizontal */
+    align-items: center;         /* Alinha verticalmente ao centro */
+    gap: 0.4rem;                 /* MODIFICAR: Espaço entre ícone, título e horário */
+    width: 100%;                 /* Ocupa toda largura */
   }
   
-  /* Container para animação de título */
+  /* Ícone de play/ao vivo antes do título */
+  /* MODIFICAR: color para mudar cor do ícone, font-size para tamanho */
+  .epg-line-icon {
+    color: var(--primary-color); /* Cor do ícone (usa cor primária do tema) */
+    font-size: 0.7rem;           /* MODIFICAR: Tamanho do ícone */
+    flex-shrink: 0;              /* Não encolhe o ícone */
+  }
+  
+  /* ========================================
+     EPG - CONTAINER DO TÍTULO COM ANIMAÇÃO
+     ======================================== */
+  
+  /* Wrapper que contém o título e controla animação marquee */
   .epg-title-wrapper {
-    flex: 1;
-    overflow: hidden;
+    flex: 1;                     /* Ocupa espaço restante */
+    overflow: hidden;            /* Esconde texto que ultrapassa */
     position: relative;
-    min-width: 0;
+    min-width: 0;                /* Permite encolher em flexbox */
+    /* Efeito de fade no final do texto */
     mask-image: linear-gradient(to right, black 90%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
   }
   
+  /* Título do programa atual */
+  /* MODIFICAR: color para cor do texto, font-weight para peso da fonte */
   .epg-line-program {
-    color: var(--text-primary);
-    font-weight: 600;
-    white-space: nowrap;
+    color: var(--text-primary);  /* MODIFICAR: Cor do título */
+    font-weight: 600;            /* MODIFICAR: Peso da fonte (600 = semi-bold) */
+    white-space: nowrap;         /* Não quebra linha */
     display: inline-block;
   }
   
-  /* Animação de deslize contínuo para títulos longos */
+  /* ========================================
+     EPG - ANIMAÇÃO MARQUEE PARA TÍTULOS LONGOS
+     ======================================== */
+  
+  /* Animação de rolagem horizontal para títulos longos */
+  /* MODIFICAR: duração em epgMarquee abaixo (10s = 10 segundos) */
   @keyframes epgMarquee {
     0% { transform: translateX(0); }
     100% { transform: translateX(calc(-100% - 3rem)); }
   }
   
+  /* Aplica animação quando wrapper tem classe .overflow */
   .epg-title-wrapper.overflow .epg-line-program {
-    animation: epgMarquee 10s linear infinite;
-    animation-delay: 2s;
-    padding-right: 3rem;
+    animation: epgMarquee 10s linear infinite; /* MODIFICAR: 10s = duração da animação */
+    animation-delay: 2s;         /* MODIFICAR: Atraso antes de começar */
+    padding-right: 3rem;         /* Espaço entre fim e início do loop */
   }
+  
+  /* Duplica texto para loop contínuo */
   .epg-title-wrapper.overflow .epg-line-program::after {
     content: attr(data-title);
     position: absolute;
@@ -850,17 +941,31 @@
     white-space: nowrap;
   }
   
+  /* ========================================
+     EPG - HORÁRIO DO PROGRAMA ATUAL
+     ======================================== */
+  
+  /* Horário exibido à direita (ex: 14:00 - 15:30) */
+  /* MODIFICAR: color para cor, font-size para tamanho */
   .epg-line-time {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.65rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-left: auto;
+    color: rgba(255, 255, 255, 0.7); /* MODIFICAR: Cor do horário */
+    font-size: 0.65rem;          /* MODIFICAR: Tamanho da fonte */
+    white-space: nowrap;         /* Não quebra linha */
+    flex-shrink: 0;              /* Não encolhe */
+    margin-left: auto;           /* Alinha à direita */
   }
+  
+  /* ========================================
+     EPG - ESTADO DE CARREGAMENTO
+     ======================================== */
+  
+  /* Texto e spinner enquanto carrega EPG */
   .epg-line-loading {
     color: rgba(255, 255, 255, 0.5);
     font-style: italic;
   }
+  
+  /* Animação de rotação do spinner */
   .epg-line-loading i {
     animation: spin 1s linear infinite;
   }
@@ -869,25 +974,33 @@
     to { transform: rotate(360deg); }
   }
   
-  /* A Seguir - linha separada abaixo */
+  /* ========================================
+     EPG - PRÓXIMO PROGRAMA ("A SEGUIR")
+     ======================================== */
+  
+  /* Container da linha "A Seguir" */
+  /* MODIFICAR: gap, font-size, border-top para separador */
   .epg-line-next {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.6);
-    padding-top: -1.25rem;
-    margin-top: 0.2rem;
-    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    gap: 0.4rem;                 /* MODIFICAR: Espaço entre elementos */
+    font-size: 0.65rem;          /* MODIFICAR: Tamanho da fonte */
+    color: rgba(255, 255, 255, 0.6); /* MODIFICAR: Cor do texto */
+    padding-top: 0.25rem;        /* MODIFICAR: Espaço acima da linha */
+    margin-top: 0.2rem;          /* MODIFICAR: Margem superior */
+    border-top: 1px dashed rgba(255, 255, 255, 0.15); /* MODIFICAR: Linha separadora */
     width: 100%;
   }
+  
+  /* Label "A seguir:" antes do título */
+  /* MODIFICAR: color para cor do label */
   .epg-line-next-label {
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.5); /* MODIFICAR: Cor do label */
     flex-shrink: 0;
   }
   
-  /* Container para animação do título "A seguir" */
+  /* Container para animação do título do próximo programa */
   .epg-next-title-wrapper {
     flex: 1;
     overflow: hidden;
@@ -897,16 +1010,18 @@
     -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
   }
   
+  /* Título do próximo programa */
+  /* MODIFICAR: color para cor do texto */
   .epg-line-next-title {
     white-space: nowrap;
     display: inline-block;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.8); /* MODIFICAR: Cor do título */
   }
   
-  /* Animação de deslize para títulos longos do "A seguir" */
+  /* Animação para títulos longos do próximo programa */
   .epg-next-title-wrapper.overflow .epg-line-next-title {
     animation: epgMarquee 10s linear infinite;
-    animation-delay: 3s;
+    animation-delay: 3s;         /* MODIFICAR: Atraso antes de começar */
     padding-right: 3rem;
   }
   .epg-next-title-wrapper.overflow .epg-line-next-title::after {
@@ -914,6 +1029,20 @@
     position: absolute;
     left: calc(100% + 3rem);
     white-space: nowrap;
+  }
+  
+  /* ========================================
+     EPG - HORÁRIO DO PRÓXIMO PROGRAMA
+     ======================================== */
+  
+  /* Horário do próximo programa à direita */
+  /* MODIFICAR: color para cor, font-size para tamanho */
+  .epg-line-next-time {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: auto;
   }
   
   .epg-current-title {
@@ -2172,9 +2301,9 @@
       <div class="content-section-landscape">
         <!-- Games Carousel -->
         <div class="games-carousel">
-          <!--<div class="games-scroll" id="gamesScroll">
+          <div class="games-scroll" id="gamesScroll">
             <!--🎮 Carregando jogos...-->
-          <!--</div>-->
+          </div>
         </div>
 
         <!-- Content Sections -->
@@ -2393,22 +2522,94 @@
   <script src="https://vjs.zencdn.net/8.6.1/video.min.js"></script>
 
   <script>
+    /* ========================================
+       SISTEMA DE PROXY COM ROTAÇÃO DE IPs
+       ======================================== */
+    
+    // ATIVAR PROXY: Mude para true para usar proxy
+    const USE_PROXY = false;
+    
+    // COLOQUE AQUI O LINK RAW DO GITHUB COM A LISTA DE IPs PROXY
+    // Formato do arquivo: um IP:PORTA por linha (ex: 192.168.1.1:8080)
+    // const PROXY_LIST_URL = 'https://raw.githubusercontent.com/1IPTVPLAYERv/radios/refs/heads/main/socks5.txt';
+    const PROXY_LIST_URL = '';
+    
+    // Lista de IPs proxy carregados
+    let proxyList = [];
+    let currentProxyIndex = 0;
+    
+    // Carrega lista de proxies do GitHub
+    async function loadProxyList() {
+      if (!USE_PROXY || !PROXY_LIST_URL) return;
+      
+      try {
+        const response = await fetch(PROXY_LIST_URL);
+        if (response.ok) {
+          const text = await response.text();
+          proxyList = text.split('\n')
+            .map(line => line.trim())
+            .filter(line => line && !line.startsWith('#'));
+        }
+      } catch (e) {
+        // Silencioso - sem mensagens de erro
+      }
+    }
+    
+    // Obtém próximo proxy da lista (rotação automática)
+    function getNextProxy() {
+      if (proxyList.length === 0) return null;
+      const proxy = proxyList[currentProxyIndex];
+      currentProxyIndex = (currentProxyIndex + 1) % proxyList.length;
+      return proxy;
+    }
+    
+    // Aplica proxy à URL do stream (adapte conforme seu servidor proxy)
+    function applyProxyToUrl(originalUrl) {
+      if (!USE_PROXY || proxyList.length === 0) return originalUrl;
+      
+      const proxy = getNextProxy();
+      if (!proxy) return originalUrl;
+      
+      // MODIFIQUE AQUI: Ajuste o formato conforme seu servidor proxy
+      // Exemplo 1: Proxy HTTP padrão
+      // return `http://${proxy}/${encodeURIComponent(originalUrl)}`;
+      
+      // Exemplo 2: Proxy com query string
+      // return `http://${proxy}/stream?url=${encodeURIComponent(originalUrl)}`;
+      
+      // Por padrão, retorna URL original (descomente uma das opções acima)
+      return originalUrl;
+    }
+    
+    // Tenta reconectar usando próximo proxy em caso de falha
+    function handleProxyFailure(originalUrl, callback) {
+      if (!USE_PROXY || proxyList.length === 0) return;
+      
+      // Tenta próximo proxy silenciosamente
+      const newUrl = applyProxyToUrl(originalUrl);
+      if (callback) callback(newUrl);
+    }
+    
+    // Inicializa sistema de proxy
+    loadProxyList();
+    /* ======================================== */
+    
     // Theme Functions
     function openThemeModal() {
       document.getElementById('themeModal').style.display = 'flex';
       updateActiveTheme();
     }
-  
+
     function closeThemeModal() {
       document.getElementById('themeModal').style.display = 'none';
     }
-  
+
     function changeTheme(theme) {
       document.body.setAttribute('data-theme', theme);
       localStorage.setItem('iptv-theme', theme);
       updateActiveTheme();
     }
-  
+
     function updateActiveTheme() {
       const currentTheme = document.body.getAttribute('data-theme') || 'verde';
       document.querySelectorAll('.theme-option').forEach(option => {
@@ -2418,13 +2619,13 @@
         }
       });
     }
-  
+
     function loadTheme() {
       const savedTheme = localStorage.getItem('iptv-theme') || 'verde';
       document.body.setAttribute('data-theme', savedTheme);
     }
-  // Função para carregar background personalizado da página
-  function loadPageBackground() {
+// Função para carregar background personalizado da página
+function loadPageBackground() {
   // URL do background - configure aqui ou deixe vazio para não usar
   const backgroundUrl = ' https://i.ibb.co/ksrcR8nC/bk.jpg ';
   
@@ -2434,7 +2635,7 @@
   } else {
     document.body.classList.remove('has-background');
   }
-  }
+}
     // Favorites Backend Class
     class FavoritesBackend {
       constructor() {
@@ -2444,7 +2645,7 @@
         this.loadFromStorage();
         this.startAutoSync();
       }
-  
+
       loadFromStorage() {
         try {
           const saved = localStorage.getItem('iptv-favorites-v2');
@@ -2457,7 +2658,7 @@
           console.error('Erro ao carregar favoritos:', error);
         }
       }
-  
+
       saveToStorage() {
         try {
           const data = {
@@ -2469,13 +2670,13 @@
           console.error('Erro ao salvar favoritos:', error);
         }
       }
-  
+
       startAutoSync() {
         this.syncInterval = setInterval(() => {
           this.saveToStorage();
         }, 10000); // Save every 10 seconds
       }
-  
+
       addFavorite(id, item) {
         this.favorites.set(id, {
           ...item,
@@ -2485,7 +2686,7 @@
         this.saveToStorage();
         return true;
       }
-  
+
       removeFavorite(id) {
         const removed = this.favorites.delete(id);
         if (removed) {
@@ -2493,16 +2694,16 @@
         }
         return removed;
       }
-  
+
       isFavorite(id) {
         return this.favorites.has(id);
       }
-  
+
       getFavorites() {
         return Array.from(this.favorites.values())
           .sort((a, b) => b.lastAccessed - a.lastAccessed);
       }
-  
+
       updateLastAccessed(id) {
         if (this.favorites.has(id)) {
           const item = this.favorites.get(id);
@@ -2511,17 +2712,17 @@
           this.saveToStorage();
         }
       }
-  
+
       getFavoritesByType(type) {
         return this.getFavorites().filter(item => item.type === type);
       }
-  
+
       clearAll() {
         this.favorites.clear();
         this.saveToStorage();
       }
     }
-  
+
     class IPTVApp {
       constructor() {
         this.categories = [];
@@ -2574,7 +2775,7 @@
         this.initRadios();
         this.init();
       }
-  
+
       // Função para escapar HTML e evitar problemas com aspas
       escapeHtml(text) {
         if (!text) return '';
@@ -2582,7 +2783,7 @@
         div.textContent = text;
         return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       }
-  
+
       async initRadios() {
         // Rádios padrão
         this.radios = [
@@ -2636,7 +2837,7 @@
           console.error('Erro ao carregar rádios do GitHub RAW:', error);
         }
       }
-  
+
       async init() {
         try {
           this.loadConfig();
@@ -2658,7 +2859,7 @@
           this.showErrorOverlay('Erro ao inicializar aplicativo', () => this.init());
         }
       }
-  
+
       initPlayer() {
         this.player = videojs('videoPlayer', {
           fluid: true,
@@ -2678,17 +2879,17 @@
           sources: [],
           playbackRates: [0.5, 1, 1.25, 1.5, 2]
         });
-  
+
         this.player.on('timeupdate', () => {
           this.saveWatchProgress();
         });
-  
+
         this.player.on('ended', () => {
           if (this.currentEpisode && this.currentEpisodeIndex < this.episodes.length - 1) {
             this.playNextEpisode();
           }
         });
-  
+
         this.player.on('error', () => {
           console.error('Erro no player:', this.player.error());
           this.showErrorOverlay('Erro no reprodutor', () => {
@@ -2699,7 +2900,7 @@
           });
         });
       }
-  
+
       setupAdvancedPlayer(url, type) {
         const video = this.player.el().querySelector('video');
         
@@ -2708,11 +2909,11 @@
           this.hls.destroy();
           this.hls = null;
         }
-  
+
         // Clear previous video source
         video.src = '';
         video.load();
-  
+
         // Detect content type
         const extension = url.split('.').pop().toLowerCase().split('?')[0];
         const isHLS = extension === 'm3u8' || extension === 'm3u' || extension === 'ts' || url.includes('m3u8');
@@ -2810,7 +3011,7 @@
           });
         }
       }
-  
+
       setupEventListeners() {
         // Theme button
         document.getElementById('themeBtn').addEventListener('click', openThemeModal);
@@ -2821,30 +3022,30 @@
             changeTheme(option.dataset.theme);
           });
         });
-  
+
         // Share button
         document.getElementById('shareBtn').addEventListener('click', () => this.shareApp());
-  
+
         // Search button
         document.getElementById('searchBtn').addEventListener('click', () => {
           const modal = new bootstrap.Modal(document.getElementById('searchModal'));
           modal.show();
         });
-  
+
         // Search input
         document.getElementById('searchInput').addEventListener('input', (e) => {
           this.performSearch(e.target.value);
         });
-  
+
         // Add playlist button
         document.getElementById('addPlaylistBtn').addEventListener('click', () => {
           const modal = new bootstrap.Modal(document.getElementById('playlistModal'));
           modal.show();
         });
-  
+
         // Save playlist button
         document.getElementById('savePlaylistBtn').addEventListener('click', () => this.savePlaylist());
-  
+
         // Main navigation
         document.querySelectorAll('.main-nav .nav-link').forEach(link => {
           link.addEventListener('click', () => {
@@ -2856,7 +3057,7 @@
             this.showContentSection(content);
           });
         });
-  
+
         // Radio category tabs
         document.querySelectorAll('#radioTabNav .tab-btn').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -2867,15 +3068,15 @@
             this.renderRadios();
           });
         });
-  
+
         // Episode controls
         document.getElementById('episodeListBtn').addEventListener('click', () => this.toggleEpisodeNavigation());
         document.getElementById('prevEpisodeBtn').addEventListener('click', () => this.playPreviousEpisode());
         document.getElementById('nextEpisodeBtn').addEventListener('click', () => this.playNextEpisode());
-  
+
         // Episode navigation close
         document.getElementById('episodeNavClose').addEventListener('click', () => this.hideEpisodeNavigation());
-  
+
         // Continue watching modal
         document.getElementById('continueYes').addEventListener('click', () => {
           document.getElementById('continueModal').style.display = 'none';
@@ -2883,14 +3084,14 @@
             this.pendingContinueAction.continue();
           }
         });
-  
+
         document.getElementById('continueNo').addEventListener('click', () => {
           document.getElementById('continueModal').style.display = 'none';
           if (this.pendingContinueAction) {
             this.pendingContinueAction.restart();
           }
         });
-  
+
         // Error overlay
         document.getElementById('retryBtn').addEventListener('click', () => {
           document.getElementById('errorOverlay').style.display = 'none';
@@ -2898,12 +3099,12 @@
             this.pendingRetryAction();
           }
         });
-  
+
         document.getElementById('closeErrorBtn').addEventListener('click', () => {
           document.getElementById('errorOverlay').style.display = 'none';
         });
       }
-  
+
       showContentSection(contentType) {
         document.querySelectorAll('.content-section').forEach(section => {
           section.classList.remove('active');
@@ -2917,7 +3118,7 @@
           document.getElementById(`${contentType}Section`).classList.add('active');
         }
       }
-  
+
       loadConfig() {
         try {
           const saved = localStorage.getItem('iptv-config');
@@ -2930,7 +3131,7 @@
           console.error('Erro ao carregar configuração:', error);
         }
       }
-  
+
       normalizeServerProtocol() {
         // Se a página está em HTTPS, tenta usar HTTPS para o servidor
         // Se falhar, o usuário precisa de um servidor com suporte HTTPS
@@ -2943,7 +3144,7 @@
           }
         }
       }
-  
+
       saveConfig() {
         try {
           localStorage.setItem('iptv-config', JSON.stringify(this.config));
@@ -2951,7 +3152,7 @@
           console.error('Erro ao salvar configuração:', error);
         }
       }
-  
+
       getCachedData(key) {
         const cached = this.cache.get(key);
         if (cached && Date.now() - cached.timestamp < this.cacheExpiration) {
@@ -2960,14 +3161,14 @@
         this.cache.delete(key);
         return null;
       }
-  
+
       setCachedData(key, data) {
         this.cache.set(key, {
           data,
           timestamp: Date.now()
         });
       }
-  
+
       // Gera URLs alternativas para evitar problemas de acesso simultâneo
       generateFallbackUrls(originalUrl) {
         const urls = [originalUrl];
@@ -3003,7 +3204,7 @@
         
         return urls;
       }
-  
+
       async retryRequest(requestFn, attempts = this.retryAttempts) {
         for (let i = 0; i < attempts; i++) {
           try {
@@ -3014,7 +3215,7 @@
           }
         }
       }
-  
+
       async loadCategories() {
         const cacheKey = 'categories';
         let categories = this.getCachedData(cacheKey);
@@ -3038,7 +3239,7 @@
         this.categories = categories;
         this.renderCategories();
       }
-  
+
       async loadMovieCategories() {
         const cacheKey = 'movie-categories';
         let categories = this.getCachedData(cacheKey);
@@ -3062,7 +3263,7 @@
         this.movieCategories = categories;
         this.renderMovieCategories();
       }
-  
+
       async loadSeriesCategories() {
         const cacheKey = 'series-categories';
         let categories = this.getCachedData(cacheKey);
@@ -3086,7 +3287,7 @@
         this.seriesCategories = categories;
         this.renderSeriesCategories();
       }
-  
+
       renderCategories() {
         const tabNav = document.getElementById('channelTabNav');
         tabNav.innerHTML = '';
@@ -3102,13 +3303,13 @@
           });
           tabNav.appendChild(button);
         });
-  
+
         // Load first category by default
         if (this.categories.length > 0) {
           this.selectCategory(this.categories[0].category_id);
         }
       }
-  
+
       renderMovieCategories() {
         const tabNav = document.getElementById('movieTabNav');
         tabNav.innerHTML = '';
@@ -3124,13 +3325,13 @@
           });
           tabNav.appendChild(button);
         });
-  
+
         // Load first category by default
         if (this.movieCategories.length > 0) {
           this.selectMovieCategory(this.movieCategories[0].category_id);
         }
       }
-  
+
       renderSeriesCategories() {
         const tabNav = document.getElementById('seriesTabNav');
         tabNav.innerHTML = '';
@@ -3146,13 +3347,13 @@
           });
           tabNav.appendChild(button);
         });
-  
+
         // Load first category by default
         if (this.seriesCategories.length > 0) {
           this.selectSeriesCategory(this.seriesCategories[0].category_id);
         }
       }
-  
+
       async selectCategory(categoryId) {
         try {
           document.querySelectorAll('#channelTabNav .tab-btn').forEach(btn => {
@@ -3161,7 +3362,7 @@
               btn.classList.add('active');
             }
           });
-  
+
           this.activeCategory = categoryId;
           document.getElementById('channelList').innerHTML = `
             <div class="text-center p-4">
@@ -3169,14 +3370,14 @@
               <p class="mt-2 mb-0">Carregando canais...</p>
             </div>
           `;
-  
+
           await this.loadChannels(categoryId);
         } catch (error) {
           console.error('Erro ao selecionar categoria:', error);
           this.showErrorOverlay('Erro ao carregar canais', () => this.selectCategory(categoryId));
         }
       }
-  
+
       async selectMovieCategory(categoryId) {
         try {
           document.querySelectorAll('#movieTabNav .tab-btn').forEach(btn => {
@@ -3185,7 +3386,7 @@
               btn.classList.add('active');
             }
           });
-  
+
           this.activeMovieCategory = categoryId;
           document.getElementById('movieList').innerHTML = `
             <div class="text-center p-4">
@@ -3193,14 +3394,14 @@
               <p class="mt-2 mb-0">Carregando filmes...</p>
             </div>
           `;
-  
+
           await this.loadMovies(categoryId);
         } catch (error) {
           console.error('Erro ao selecionar categoria de filmes:', error);
           this.showErrorOverlay('Erro ao carregar filmes', () => this.selectMovieCategory(categoryId));
         }
       }
-  
+
       async selectSeriesCategory(categoryId) {
         try {
           document.querySelectorAll('#seriesTabNav .tab-btn').forEach(btn => {
@@ -3209,7 +3410,7 @@
               btn.classList.add('active');
             }
           });
-  
+
           this.activeSeriesCategory = categoryId;
           
           // Garantir que a lista de séries está visível
@@ -3224,14 +3425,14 @@
               <p class="mt-2 mb-0">Carregando séries...</p>
             </div>
           `;
-  
+
           await this.loadSeries(categoryId);
         } catch (error) {
           console.error('Erro ao selecionar categoria de séries:', error);
           this.showErrorOverlay('Erro ao carregar séries', () => this.selectSeriesCategory(categoryId));
         }
       }
-  
+
       async loadChannels(categoryId) {
         const cacheKey = `channels-${categoryId}`;
         let channels = this.getCachedData(cacheKey);
@@ -3267,7 +3468,7 @@
         this.allContent.push(...this.channels);
         this.renderChannels();
       }
-  
+
       async loadMovies(categoryId) {
         const cacheKey = `movies-${categoryId}`;
         let movies = this.getCachedData(cacheKey);
@@ -3306,7 +3507,7 @@
         this.allContent.push(...this.movies);
         this.renderMovies();
       }
-  
+
       async loadSeries(categoryId) {
         const cacheKey = `series-${categoryId}`;
         let series = this.getCachedData(cacheKey);
@@ -3345,7 +3546,7 @@
         this.allContent.push(...this.series);
         this.renderSeries();
       }
-  
+
       renderChannels() {
         const channelList = document.getElementById('channelList');
         
@@ -3358,14 +3559,14 @@
           `;
           return;
         }
-  
+
         channelList.innerHTML = '';
         this.channels.forEach(channel => {
           const item = this.createContentItem(channel, 'channel');
           channelList.appendChild(item);
         });
       }
-  
+
       renderMovies() {
         const movieList = document.getElementById('movieList');
         
@@ -3378,14 +3579,14 @@
           `;
           return;
         }
-  
+
         movieList.innerHTML = '';
         this.movies.forEach(movie => {
           const item = this.createContentItem(movie, 'movie');
           movieList.appendChild(item);
         });
       }
-  
+
       renderSeries() {
         const seriesList = document.getElementById('seriesList');
         
@@ -3398,14 +3599,14 @@
           `;
           return;
         }
-  
+
         seriesList.innerHTML = '';
         this.series.forEach(series => {
           const item = this.createContentItem(series, 'series');
           seriesList.appendChild(item);
         });
       }
-  
+
       renderRadios() {
         const radioList = document.getElementById('radioList');
         let filteredRadios = this.radios;
@@ -3413,7 +3614,7 @@
         if (this.activeRadioCategory !== 'all') {
           filteredRadios = this.radios.filter(radio => radio.category === this.activeRadioCategory);
         }
-  
+
         if (filteredRadios.length === 0) {
           radioList.innerHTML = `
             <div class="text-center p-4">
@@ -3423,14 +3624,14 @@
           `;
           return;
         }
-  
+
         radioList.innerHTML = '';
         filteredRadios.forEach(radio => {
           const item = this.createContentItem(radio, 'radio');
           radioList.appendChild(item);
         });
       }
-  
+
       createContentItem(content, type) {
         const item = document.createElement('div');
         item.className = 'content-item';
@@ -3439,13 +3640,13 @@
                          (type === 'movie' && this.currentMovie?.id === content.id) ||
                          (type === 'series' && this.currentSeries?.id === content.id) ||
                          (type === 'radio' && this.currentRadio?.id === content.id);
-  
+
         if (isPlaying) {
           item.classList.add('playing');
         }
-  
+
         const avatarStyle = content.icon ? `background-image: url('${content.icon}'); background-size: cover; background-position: center;` : '';
-  
+
         // Check for watch progress
         const progressKey = type === 'channel' ? `channel_${content.id}` : 
                            type === 'movie' ? `movie_${content.id}` : 
@@ -3453,7 +3654,7 @@
                            `radio_${content.id}`;
         const progress = this.watchProgress.get(progressKey);
         let progressIndicator = '';
-  
+
         let details = '';
         if (type === 'channel') {
           details = isPlaying ? '' : 'Toque para assistir';
@@ -3473,36 +3674,40 @@
           
           if (isPlaying) details = 'Tocando agora';
         }
-  
+
         // EPG em nova linha - mostrado automaticamente para canais em reprodução
+        // EPG FICA FORA do content-info para ocupar toda largura
         const epgLineSection = (type === 'channel' && isPlaying) ? `
           <div class="epg-line" data-epg-line-id="${content.id}">
             <i class="fas fa-spinner epg-line-loading"></i>
             <span class="epg-line-loading">Carregando EPG...</span>
           </div>
         ` : '';
-  
+
         item.innerHTML = `
           <div class="content-avatar" style="${avatarStyle}">
             ${!content.icon ? content.letter : ''}
           </div>
           <div class="content-info">
-            <div class="content-name">${content.name}</div>
+            <div class="content-name-wrapper">
+              <div class="content-name" data-name="${this.escapeHtml(content.name)}">${content.name}</div>
+            </div>
             <div class="content-details">
               ${details}
               ${content.rating ? ` • ⭐ ${content.rating}` : ''}
               ${progressIndicator}
             </div>
-            ${epgLineSection}
           </div>
-          ${isPlaying ? '<div class="playing-indicator">AO VIVO</div>' : ''}
+          ${isPlaying ? '<div class="playingindicator"></div>' : ''}
           <button class="favorite-btn ${this.favorites.has(content.id) ? 'active' : ''}" 
                   data-content-id="${content.id}">
             <i class="fas fa-heart"></i>
           </button>
+          ${epgLineSection}
         `;
         // INDICADOR 👆 linha: ${isPlaying
-  
+        // EPG agora está FORA do content-info para ocupar toda largura disponível
+
         // Verificar se o nome é longo e aplicar animação de deslize
         requestAnimationFrame(() => {
           const nameEl = item.querySelector('.content-name');
@@ -3511,12 +3716,12 @@
             nameEl.classList.add('scrolling');
           }
         });
-  
+
         // Carregar EPG automaticamente para canal em reprodução
         if (type === 'channel' && isPlaying && content.id) {
           this.loadEPGLine(item, content.id, content.name);
         }
-  
+
         // Content click event
         item.addEventListener('click', (e) => {
           if (!e.target.classList.contains('favorite-btn') && !e.target.closest('.favorite-btn')) {
@@ -3531,17 +3736,17 @@
             }
           }
         });
-  
+
         // Favorite button event
         const favoriteBtn = item.querySelector('.favorite-btn');
         favoriteBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           this.toggleFavorite(content.id);
         });
-  
+
         return item;
       }
-  
+
       // ========== FUNÇÕES EPG ==========
       
       // Carregar EPG em nova linha automaticamente
@@ -3568,15 +3773,14 @@
           // Adicionar linha do próximo programa se disponível
           if (epgData.next) {
             const nextStart = this.formatEPGTime(epgData.next.start);
-            const nextEnd = this.formatEPGTime(epgData.next.end);
             epgHTML += `
               <div class="epg-line-next">
-                <i class="fas fa-clock epg-line-icon"></i>
+                <i class="fas fa-clock epg-line-next-icon"></i>
                 <span class="epg-line-next-label">A seguir:</span>
                 <div class="epg-next-title-wrapper">
                   <span class="epg-line-next-title" data-title="${this.escapeHtml(epgData.next.title)}">${epgData.next.title}</span>
                 </div>
-                <span class="epg-line-time">${nextStart}</span>
+                <span class="epg-line-next-time">${nextStart}</span>
               </div>
             `;
           }
@@ -3802,7 +4006,7 @@
           `;
         }
       }
-  
+
       // NOVA FUNÇÃO PARA ANIMAR A LOGO
       animateLogo() {
         const logo = document.getElementById('playerLogo');
@@ -3827,13 +4031,13 @@
           }, 1200);
         }, 1500);
       }
-  
+
       playChannel(channel) {
         console.log('=== playChannel chamado ===');
         console.log('Canal:', channel.name, 'URL:', channel.url);
         
         const progress = this.checkContinueWatching(channel.id, 'channel');
-  
+
         const doPlay = (startTime = 0) => {
           try {
             console.log('Iniciando reprodução do canal:', channel.url);
@@ -3843,10 +4047,10 @@
             this.currentSeries = null;
             this.currentEpisode = null;
             this.currentRadio = null;
-  
+
             // Use advanced player with HLS support
             this.setupAdvancedPlayer(channel.url, 'channel');
-  
+
             this.player.ready(() => {
               if (startTime > 0) {
                 this.player.currentTime(startTime);
@@ -3857,7 +4061,7 @@
                 console.error('Erro ao iniciar reprodução:', err);
               });
             });
-  
+
             document.getElementById('videoPlaceholder').style.display = 'none';
             this.renderChannels();
             this.hideCustomControls();
@@ -3868,17 +4072,17 @@
             this.showErrorOverlay('Erro ao reproduzir canal', () => this.playChannel(channel));
           }
         };
-  
+
         if (progress) {
           this.showContinueModal(progress, doPlay, () => doPlay(0));
         } else {
           doPlay();
         }
       }
-  
+
       playMovie(movie) {
         const progress = this.checkContinueWatching(movie, 'movie');
-  
+
         const doPlay = (startTime = 0) => {
           try {
             this.animateLogo(); // NOVA LINHA - Anima a logo
@@ -3887,17 +4091,17 @@
             this.currentSeries = null;
             this.currentEpisode = null;
             this.currentRadio = null;
-  
+
             // Use advanced player
             this.setupAdvancedPlayer(movie.url, 'movie');
-  
+
             this.player.ready(() => {
               if (startTime > 0) {
                 this.player.currentTime(startTime);
               }
               this.player.play();
             });
-  
+
             document.getElementById('videoPlaceholder').style.display = 'none';
             this.renderMovies();
             this.hideCustomControls();
@@ -3908,14 +4112,14 @@
             this.showErrorOverlay('Erro ao reproduzir filme', () => this.playMovie(movie));
           }
         };
-  
+
         if (progress) {
           this.showContinueModal(progress, doPlay, () => doPlay(0));
         } else {
           doPlay();
         }
       }
-  
+
       playRadio(radio) {
         try {
           this.animateLogo();
@@ -3924,7 +4128,7 @@
           this.currentMovie = null;
           this.currentSeries = null;
           this.currentEpisode = null;
-  
+
           // NOVA FUNCIONALIDADE: Verificar se tem URL de vídeo
           const hasVideoStream = radio.video && radio.video.trim() !== '' && radio.video !== 'url_vídeo';
           
@@ -3938,7 +4142,7 @@
             this.player.ready(() => {
               this.player.play();
             });
-  
+
             document.getElementById('videoPlaceholder').style.display = 'none';
             
             // Para rádios com vídeo, não mostrar a tela de rádio visual
@@ -3953,11 +4157,11 @@
             
             // Use advanced player for radio (áudio apenas)
             this.setupAdvancedPlayer(radio.url, 'radio');
-  
+
             this.player.ready(() => {
               this.player.play();
             });
-  
+
             document.getElementById('videoPlaceholder').style.display = 'none';
             
             // Show radio visual display para áudio apenas
@@ -3974,7 +4178,7 @@
           this.showErrorOverlay('Erro ao reproduzir rádio', () => this.playRadio(radio));
         }
       }
-  
+
       showRadioVisualDisplay(radio) {
         // NOVA VERIFICAÇÃO: Só mostrar display visual se não estiver em modo vídeo
         if (this.radioVideoMode) {
@@ -3986,11 +4190,11 @@
         const mainImage = document.getElementById('radioMainImage');
         const mainName = document.getElementById('radioMainName');
         const mainFrequency = document.getElementById('radioMainFrequency');
-  
+
         // Set radio information
         mainName.textContent = radio.name;
         mainFrequency.textContent = `${radio.frequency}${radio.city ? ' • ' + radio.city : ''}`;
-  
+
         // Set images (both background and main)
         if (radio.icon) {
           background.style.backgroundImage = `url(${radio.icon})`;
@@ -4011,14 +4215,14 @@
           background.style.backgroundImage = 'linear-gradient(135deg, var(--primary-color), var(--bg-secondary))';
           mainImage.style.display = 'none';
         }
-  
+
         // Show the visual display
         visualDisplay.classList.add('active');
-  
+
         // Also show the small overlay for a few seconds as additional feedback
         this.showRadioInfo(radio);
       }
-  
+
       hideRadioVisualDisplay() {
         const visualDisplay = document.getElementById('radioVisualDisplay');
         visualDisplay.classList.remove('active');
@@ -4029,13 +4233,13 @@
         // Reset radio video mode
         this.radioVideoMode = false;
       }
-  
+
       showRadioInfo(radio) {
         const overlay = document.getElementById('radioInfoOverlay');
         const logoSmall = document.getElementById('radioLogoSmall');
         const nameOverlay = document.getElementById('radioNameOverlay');
         const frequencyOverlay = document.getElementById('radioFrequencyOverlay');
-  
+
         // Set radio info
         logoSmall.src = radio.icon || '';
         logoSmall.alt = radio.name;
@@ -4055,33 +4259,33 @@
           frequencyText += ' • 📺 Com Vídeo';
         }
         frequencyOverlay.textContent = frequencyText;
-  
+
         // Show overlay
         overlay.classList.add('visible');
-  
+
         // Hide after 10 seconds (or 5 seconds for video mode)
         const hideDelay = hasVideo ? 5000 : 10000;
         setTimeout(() => {
           overlay.classList.remove('visible');
         }, hideDelay);
       }
-  
+
       hideRadioInfo() {
         const overlay = document.getElementById('radioInfoOverlay');
         overlay.classList.remove('visible');
       }
-  
+
       startMetadataFetching(radio) {
         // Clear any existing metadata interval
         if (this.metadataInterval) {
           clearInterval(this.metadataInterval);
           this.metadataInterval = null;
         }
-  
+
         // Hide metadata info initially
         const metadataInfo = document.getElementById('radioMetadataInfo');
         metadataInfo.style.display = 'none';
-  
+
         // Only start fetching if radio has metadata API configured
         if (radio.metadata) {
           console.log('Starting metadata fetching for radio:', radio.name);
@@ -4098,12 +4302,12 @@
           }, 30000); // 30 seconds
         }
       }
-  
+
       async fetchRadioMetadata(radio) {
         if (!radio.metadata || !radio.url) {
           return;
         }
-  
+
         try {
           const metadataUrl = radio.metadata + encodeURIComponent(radio.url);
           console.log('Fetching metadata from:', metadataUrl);
@@ -4115,14 +4319,14 @@
             },
             timeout: 10000 // 10 seconds timeout
           });
-  
+
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-  
+
           const data = await response.json();
           console.log('Metadata received:', data);
-  
+
           if (data && data.title) {
             this.updateSongTitle(data.title);
           }
@@ -4131,7 +4335,7 @@
           // Don't show error to user, just log it
         }
       }
-  
+
       updateSongTitle(title) {
         const songTitleElement = document.getElementById('songTitle');
         if (songTitleElement && title) {
@@ -4139,7 +4343,7 @@
           console.log('Updated song title to:', title);
         }
       }
-  
+
       stopMetadataFetching() {
         if (this.metadataInterval) {
           clearInterval(this.metadataInterval);
@@ -4151,7 +4355,7 @@
         const metadataInfo = document.getElementById('radioMetadataInfo');
         metadataInfo.style.display = 'none';
       }
-  
+
       async showSeriesEpisodes(series) {
         try {
           this.currentSeries = series;
@@ -4160,7 +4364,7 @@
           document.getElementById('seriesList').style.display = 'none';
           const episodeList = document.getElementById('episodeList');
           episodeList.style.display = 'grid';
-  
+
           episodeList.innerHTML = `
             <div class="episode-back-button">
               <button class="btn btn-secondary" onclick="iptvApp.backToSeries()">
@@ -4173,7 +4377,7 @@
               <p class="mt-2 mb-0">Carregando episódios...</p>
             </div>
           `;
-  
+
           // Load episodes with cache
           const cacheKey = `episodes-${series.id}`;
           let episodesData = this.getCachedData(cacheKey);
@@ -4188,7 +4392,7 @@
             });
             this.setCachedData(cacheKey, episodesData);
           }
-  
+
           this.episodes = [];
           
           // Parse episodes from all seasons - CORRIGIDO
@@ -4209,7 +4413,7 @@
               }
             });
           }
-  
+
           // Sort episodes
           this.episodes.sort((a, b) => {
             if (a.season !== b.season) {
@@ -4217,14 +4421,14 @@
             }
             return a.episode_num - b.episode_num;
           });
-  
+
           this.renderEpisodes();
         } catch (error) {
           console.error('Erro ao carregar episódios:', error);
           this.showErrorOverlay('Erro ao carregar episódios', () => this.showSeriesEpisodes(series));
         }
       }
-  
+
       renderEpisodes() {
         const episodeList = document.getElementById('episodeList');
         
@@ -4243,7 +4447,7 @@
           `;
           return;
         }
-  
+
         episodeList.innerHTML = `
           <div class="episode-back-button">
             <button class="btn btn-secondary" onclick="iptvApp.backToSeries()">
@@ -4252,7 +4456,7 @@
             <h5 class="mt-2 mb-0">${this.currentSeries.name}</h5>
           </div>
         `;
-  
+
         this.episodes.forEach((episode, index) => {
           const episodeCard = document.createElement('div');
           episodeCard.className = 'episode-card';
@@ -4260,14 +4464,14 @@
           if (this.currentEpisode && this.currentEpisode.id === episode.id) {
             episodeCard.classList.add('current');
           }
-  
+
           // Check for progress
           const progress = this.checkContinueWatching(episode, 'episode');
           let progressText = '';
           if (progress) {
             progressText = `<div class="progress-indicator mt-2">${Math.round(progress.percentage)}% assistido</div>`;
           }
-  
+
           episodeCard.innerHTML = `
             <div class="episode-number">T${episode.season}E${episode.episode_num}</div>
             <div class="episode-title">${episode.title}</div>
@@ -4276,18 +4480,18 @@
               ${progressText}
             </div>
           `;
-  
+
           episodeCard.addEventListener('click', () => {
             this.playEpisode(episode, index);
           });
-  
+
           episodeList.appendChild(episodeCard);
         });
       }
-  
+
       playEpisode(episode, index) {
         const progress = this.checkContinueWatching(episode, 'episode');
-  
+
         const doPlay = (startTime = 0) => {
           try {
             this.animateLogo(); // NOVA LINHA - Anima a logo
@@ -4296,17 +4500,17 @@
             this.currentChannel = null;
             this.currentMovie = null;
             this.currentRadio = null;
-  
+
             // Use advanced player
             this.setupAdvancedPlayer(episode.url, 'episode');
-  
+
             this.player.ready(() => {
               if (startTime > 0) {
                 this.player.currentTime(startTime);
               }
               this.player.play();
             });
-  
+
             document.getElementById('videoPlaceholder').style.display = 'none';
             this.renderEpisodes();
             this.showCustomControls();
@@ -4318,14 +4522,14 @@
             this.showErrorOverlay('Erro ao reproduzir episódio', () => this.playEpisode(episode, index));
           }
         };
-  
+
         if (progress) {
           this.showContinueModal(progress, doPlay, () => doPlay(0));
         } else {
           doPlay();
         }
       }
-  
+
       backToSeries() {
         const episodeList = document.getElementById('episodeList');
         const seriesList = document.getElementById('seriesList');
@@ -4343,17 +4547,17 @@
         
         console.log('Voltou para lista de séries');
       }
-  
+
       showCustomControls() {
         document.getElementById('customControls').style.display = 'flex';
         this.updateNavigationButtons();
       }
-  
+
       hideCustomControls() {
         document.getElementById('customControls').style.display = 'none';
         this.hideEpisodeNavigation();
       }
-  
+
       updateNavigationButtons() {
         const prevBtn = document.getElementById('prevEpisodeBtn');
         const nextBtn = document.getElementById('nextEpisodeBtn');
@@ -4361,21 +4565,21 @@
         prevBtn.disabled = this.currentEpisodeIndex <= 0;
         nextBtn.disabled = this.currentEpisodeIndex >= this.episodes.length - 1;
       }
-  
+
       playPreviousEpisode() {
         if (this.currentEpisodeIndex > 0) {
           const prevIndex = this.currentEpisodeIndex - 1;
           this.playEpisode(this.episodes[prevIndex], prevIndex);
         }
       }
-  
+
       playNextEpisode() {
         if (this.currentEpisodeIndex < this.episodes.length - 1) {
           const nextIndex = this.currentEpisodeIndex + 1;
           this.playEpisode(this.episodes[nextIndex], nextIndex);
         }
       }
-  
+
       toggleEpisodeNavigation() {
         const overlay = document.getElementById('episodeNavOverlay');
         if (overlay.classList.contains('visible')) {
@@ -4384,17 +4588,17 @@
           this.showEpisodeNavigation();
         }
       }
-  
+
       showEpisodeNavigation() {
         if (!this.currentSeries || this.episodes.length === 0) return;
-  
+
         const overlay = document.getElementById('episodeNavOverlay');
         const title = document.getElementById('episodeNavTitle');
         const list = document.getElementById('episodeNavList');
-  
+
         title.textContent = this.currentSeries.name;
         list.innerHTML = '';
-  
+
         this.episodes.forEach((episode, index) => {
           const item = document.createElement('button');
           item.className = 'episode-nav-item';
@@ -4402,29 +4606,29 @@
           if (this.currentEpisode && this.currentEpisode.id === episode.id) {
             item.classList.add('current');
           }
-  
+
           item.textContent = `T${episode.season}E${episode.episode_num} - ${episode.title}`;
           item.addEventListener('click', () => {
             this.playEpisode(episode, index);
             this.hideEpisodeNavigation();
           });
-  
+
           list.appendChild(item);
         });
-  
+
         overlay.classList.add('visible');
       }
-  
+
       hideEpisodeNavigation() {
         document.getElementById('episodeNavOverlay').classList.remove('visible');
       }
-  
+
       updateEpisodeNavigation() {
         if (document.getElementById('episodeNavOverlay').classList.contains('visible')) {
           this.showEpisodeNavigation();
         }
       }
-  
+
       checkContinueWatching(content, type) {
         const progressKey = type === 'channel' ? `channel_${content.id || content}` : 
                            type === 'movie' ? `movie_${content.id}` : 
@@ -4444,7 +4648,7 @@
         
         return null;
       }
-  
+
       showContinueModal(progress, continueCallback, restartCallback) {
         const modal = document.getElementById('continueModal');
         const message = document.getElementById('continueMessage');
@@ -4458,7 +4662,7 @@
         
         modal.style.display = 'flex';
       }
-  
+
       saveWatchProgress() {
         if (!this.player || this.player.paused()) return;
         
@@ -4491,7 +4695,7 @@
           this.saveWatchProgressToStorage();
         }
       }
-  
+
       loadWatchProgress() {
         try {
           const saved = localStorage.getItem('iptv-watch-progress');
@@ -4503,7 +4707,7 @@
           console.error('Erro ao carregar progresso:', error);
         }
       }
-  
+
       saveWatchProgressToStorage() {
         try {
           const data = Array.from(this.watchProgress.entries());
@@ -4512,7 +4716,7 @@
           console.error('Erro ao salvar progresso:', error);
         }
       }
-  
+
       toggleFavorite(itemId) {
         // Find the item in all content arrays
         let item = null;
@@ -4589,7 +4793,7 @@
           this.renderFavorites();
         }
       }
-  
+
       loadFavorites() {
         try {
           // Sync with backend
@@ -4611,7 +4815,7 @@
           console.error('Erro ao carregar favoritos:', error);
         }
       }
-  
+
       saveFavorites() {
         // Backend handles saving automatically, but keep for compatibility
         try {
@@ -4620,7 +4824,7 @@
           console.error('Erro ao salvar favoritos:', error);
         }
       }
-  
+
       renderFavorites() {
         const favoritesList = document.getElementById('favoritesList');
         
@@ -4712,7 +4916,7 @@
           favoritesList.appendChild(card);
         });
       }
-  
+
       updateAllFavoriteButtons() {
         // Atualiza todos os botões de favorito na interface
         document.querySelectorAll('.favorite-btn').forEach(btn => {
@@ -4724,7 +4928,7 @@
           }
         });
       }
-  
+
       showToast(message, type = 'info') {
         // Cria um toast simples para feedback
         const toast = document.createElement('div');
@@ -4786,7 +4990,7 @@
           document.querySelectorAll('.main-nav .nav-link:not([data-content="radios"])').forEach(l => l.classList.remove('active'));
         }
       }
-  
+
       performSearch(query) {
         const resultsContainer = document.getElementById('searchResults');
         
@@ -4799,12 +5003,12 @@
           `;
           return;
         }
-  
+
         const searchChannels = document.getElementById('searchChannels').checked;
         const searchMovies = document.getElementById('searchMovies').checked;
         const searchSeries = document.getElementById('searchSeries').checked;
         const searchRadios = document.getElementById('searchRadios').checked;
-  
+
         let results = [];
         
         // Search channels
@@ -4834,7 +5038,7 @@
             item.name.toLowerCase().includes(query.toLowerCase())
           ));
         }
-  
+
         if (results.length === 0) {
           resultsContainer.innerHTML = `
             <div class="text-center p-4">
@@ -4844,7 +5048,7 @@
           `;
           return;
         }
-  
+
         resultsContainer.innerHTML = '';
         results.slice(0, 50).forEach(item => {
           const searchItem = document.createElement('div');
@@ -4861,7 +5065,7 @@
               <div class="item-type">${this.getTypeLabel(item.type)}</div>
             </div>
           `;
-  
+
           searchItem.addEventListener('click', () => {
             // Close search modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('searchModal'));
@@ -4889,11 +5093,11 @@
                                  item.type === 'series' ? 'series' : 'radios';
             document.querySelector(`[data-content="${targetContent}"]`).classList.add('active');
           });
-  
+
           resultsContainer.appendChild(searchItem);
         });
       }
-  
+
       getTypeLabel(type) {
         const labels = {
           'channel': 'Canal',
@@ -4903,7 +5107,7 @@
         };
         return labels[type] || type;
       }
-  
+
       async savePlaylist() {
         try {
           const url = document.getElementById('playlistUrl').value.trim();
@@ -4911,48 +5115,48 @@
             this.showError('Por favor, insira uma URL válida');
             return;
           }
-  
+
           const newConfig = this.extractPlaylistInfo(url);
           this.config = newConfig;
           this.saveConfig();
-  
+
           const modal = bootstrap.Modal.getInstance(document.getElementById('playlistModal'));
           modal.hide();
           document.getElementById('playlistForm').reset();
-  
+
           // Clear cache when changing playlist
           this.cache.clear();
-  
+
           await Promise.all([
             this.loadCategories(),
             this.loadMovieCategories(),
             this.loadSeriesCategories()
           ]);
-  
+
           this.showSuccess('Playlist adicionada com sucesso!');
         } catch (error) {
           console.error('Erro ao salvar playlist:', error);
           this.showError(error.message);
         }
       }
-  
+
       extractPlaylistInfo(url) {
         try {
           const urlObj = new URL(url);
           const server = `${urlObj.protocol}//${urlObj.host}`;
           const username = urlObj.searchParams.get('username');
           const password = urlObj.searchParams.get('password');
-  
+
           if (!username || !password) {
             throw new Error('Username ou password não encontrado na URL');
           }
-  
+
           return { server, username, password };
         } catch (error) {
           throw new Error('URL inválida. Verifique se contém username e password.');
         }
       }
-  
+
       shareApp() {
         const shareUrl = window.location.href;
         
@@ -4970,7 +5174,7 @@
           });
         }
       }
-  
+
       showErrorOverlay(message, retryCallback) {
         const overlay = document.getElementById('errorOverlay');
         const messageEl = document.getElementById('errorMessage');
@@ -4979,19 +5183,19 @@
         this.pendingRetryAction = retryCallback;
         overlay.style.display = 'flex';
       }
-  
+
       showError(message) {
         this.showAlert('Erro', message, 'error');
       }
-  
+
       showSuccess(message) {
         this.showAlert('Sucesso', message, 'success');
       }
-  
+
       showAlert(title, message, type = 'info') {
         // Remove existing alerts
         document.querySelectorAll('.custom-alert, .alert-backdrop').forEach(el => el.remove());
-  
+
         // Create backdrop
         const backdrop = document.createElement('div');
         backdrop.className = 'alert-backdrop';
@@ -5007,7 +5211,7 @@
           align-items: center;
           justify-content: center;
         `;
-  
+
         // Create alert
         const alert = document.createElement('div');
         alert.className = 'custom-alert';
@@ -5021,10 +5225,10 @@
           width: 400px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         `;
-  
+
         const iconColor = type === 'error' ? '#EF4444' : type === 'success' ? '#10B981' : '#6B7280';
         const iconName = type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle';
-  
+
         alert.innerHTML = `
           <i class="fas fa-${iconName} fa-3x mb-3" style="color: ${iconColor}"></i>
           <h5 class="mb-3">${title}</h5>
@@ -5033,10 +5237,10 @@
             OK
           </button>
         `;
-  
+
         backdrop.appendChild(alert);
         document.body.appendChild(backdrop);
-  
+
         // Auto remove after 5 seconds for success messages
         if (type === 'success') {
           setTimeout(() => {
@@ -5046,7 +5250,7 @@
           }, 5000);
         }
       }
-  
+
       async loadGames() {
         try {
           const games = [
@@ -5066,7 +5270,7 @@
         }
       }
     }
-  
+
     // Initialize app when DOM is loaded
     let iptvApp;
     document.addEventListener('DOMContentLoaded', () => {
